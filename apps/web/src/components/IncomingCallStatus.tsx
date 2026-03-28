@@ -19,16 +19,18 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
       // 1. Immediately request OS Notification permissions safely
       if (typeof window !== 'undefined' && 'Notification' in window) {
          setPermissionStatus(Notification.permission);
-         // Autoplay aggressive prompt if possible, though browsers may block it:
          if (Notification.permission === 'default') {
              Notification.requestPermission().then(setPermissionStatus);
          }
       }
 
       const supabase = createClient();
-      const channel = supabase.channel('system:ringing');
+      const channel = supabase.channel('system:ringing', {
+          config: { broadcast: { ack: false, self: true } }
+      });
       
       channel.on('broadcast', { event: 'call' }, (payload) => {
+          console.log("📥 RECEIVED BROADCAST PING:", payload);
           if (payload.payload.to === userSyncId) {
              setIncomingCall({ 
                  callerSyncId: payload.payload.from, 
@@ -113,14 +115,33 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
        });
    };
 
+   // DIAGNOSTIC LOOPBACK PING
+   const triggerSelfPing = async () => {
+       const supabase = createClient();
+       const ch = supabase.channel('system:ringing', { config: { broadcast: { ack: false, self: true } } });
+       ch.subscribe(async (status) => {
+           if (status === 'SUBSCRIBED') {
+               await ch.send({ type: 'broadcast', event: 'call', payload: { to: userSyncId, from: userSyncId, fromName: 'Diagnostic Ping' } });
+               setTimeout(() => supabase.removeChannel(ch), 500);
+           }
+       });
+   };
+
    return (
        <>
-         {/* Manual Override Prompt Banner */}
-         {permissionStatus === 'default' && !isRinging && (
-             <div className="fixed bottom-6 right-6 bg-orange-50 p-4 rounded-2xl shadow-xl border border-orange-200 z-40 max-w-sm flex flex-col gap-2">
-                 <p className="text-orange-800 text-sm font-bold">Never miss a call!</p>
-                 <button onClick={requestManualPermissions} className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-xl transition-colors">
-                     🔔 Enable Desktop Alerts
+         {/* Manual Override & Debug Banner */}
+         {!isRinging && (
+             <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-40 max-w-sm">
+                 {permissionStatus === 'default' && (
+                     <div className="bg-orange-50 p-4 rounded-2xl shadow-xl border border-orange-200">
+                         <p className="text-orange-800 text-sm font-bold mb-2">Never miss a call!</p>
+                         <button onClick={requestManualPermissions} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-xl transition-colors">
+                             🔔 Enable Desktop Alerts
+                         </button>
+                     </div>
+                 )}
+                 <button onClick={triggerSelfPing} className="bg-neutral-800 hover:bg-neutral-900 text-white text-[10px] font-mono py-1.5 px-3 rounded-lg opacity-50 hover:opacity-100 transition-opacity self-end shadow-sm">
+                     ⚡ Test Ring (Self-Ping)
                  </button>
              </div>
          )}
