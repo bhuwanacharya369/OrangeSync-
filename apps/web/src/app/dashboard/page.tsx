@@ -4,6 +4,7 @@ import Link from 'next/link';
 import QRCode from 'react-qr-code';
 import FriendsList from './FriendsList';
 import IncomingCallListener from '@/components/IncomingCallStatus';
+import NotificationBell from '@/components/NotificationBell';
 import os from 'os';
 
 function getLocalCompanionUrl() {
@@ -44,11 +45,14 @@ export default async function DashboardPage() {
             <p className="text-orange-600/80 font-medium mt-1">Ready to sync up and collaborate?</p>
           </div>
           
-          <form action="/auth/signout" method="post">
-            <button className="px-6 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-xl transition-colors">
-              Sign Out
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <form action="/auth/signout" method="post">
+              <button className="px-6 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-xl transition-colors shadow-sm">
+                Sign Out
+              </button>
+            </form>
+          </div>
         </div>
 
         {/* Main Grid Floor */}
