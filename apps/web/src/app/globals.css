@@ -111,5 +111,5 @@ body {
   @apply !bg-orange-950/20 !border-orange-900/40;
 }
 :root[data-mode="dark"] .bg-gray-100 {
-  @apply !bg-neutral-800 !text-neutral-200 !hover:bg-neutral-700;
+  @apply !bg-neutral-800 !text-neutral-200 hover:!bg-neutral-700;
 }
