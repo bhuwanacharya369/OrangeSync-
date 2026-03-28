@@ -42,23 +42,38 @@ export default function FriendsList({ friends = [], mySyncId, myName }: { friend
   };
 
   const startCall = async (friendTarget: any) => {
-      // 1. Send the Ring Broadcast over Supabase Realtime
       const supabase = createClient();
-      const channel = supabase.channel('system:ringing');
+      const channel = supabase.channel('system:ringing', {
+          config: { broadcast: { self: true, ack: false } }
+      });
       
-      channel.subscribe(async (status) => {
+      // Fallback: ALWAYS join the room natively even if the Socket firewall blocks the server broadcast
+      let redirected = false;
+      const executeRedirect = () => {
+          if (redirected) return;
+          redirected = true;
+          router.push(`/dashboard/call?room=${mySyncId}`);
+      };
+      
+      // Maximum 1.5 seconds wait time for the server to hook up the signaling
+      setTimeout(executeRedirect, 1500);
+      
+      channel.subscribe(async (status, err) => {
+         console.log('ORANGESYNC Broadcast Status:', status, err || '');
          if (status === 'SUBSCRIBED') {
-            await channel.send({
-                type: 'broadcast',
-                event: 'call',
-                payload: { to: friendTarget.syncId, from: mySyncId, fromName: myName }
-            });
+            try {
+                await channel.send({
+                    type: 'broadcast',
+                    event: 'call',
+                    payload: { to: friendTarget.syncId, from: mySyncId, fromName: myName }
+                });
+                console.log('📢 Broadcast Ping Sent!');
+            } catch (e) {
+                console.error("Failed to send ring: ", e);
+            }
             
-            // 2. Add a slight delay before redirecting to ensure the WebSocket 
-            // completely flushes the Ring packet before the component unmounts
-            setTimeout(() => {
-               router.push(`/dashboard/call?room=${mySyncId}`);
-            }, 600);
+            // Allow 600ms for websocket packet travel, then jump to the camera room
+            setTimeout(executeRedirect, 600);
          }
       });
   };
