@@ -91,7 +91,7 @@ function CallPageContent() {
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://mock.livekit.cloud'}
       data-lk-theme="default"
-      className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col"
+      className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col h-[100dvh] w-screen"
       onDisconnected={() => router.push('/dashboard')}
     >
       {/* Top Header / Tab Bar */}
