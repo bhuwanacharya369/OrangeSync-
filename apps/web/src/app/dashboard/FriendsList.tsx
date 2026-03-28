@@ -37,8 +37,12 @@ export default function FriendsList({ friends = [], mySyncId, myName }: { friend
                 event: 'call',
                 payload: { to: friendTarget.syncId, from: mySyncId, fromName: myName }
             });
-            // 2. Drop the Caller into their own room to wait for pickup
-            router.push(`/dashboard/call?room=${mySyncId}`);
+            
+            // 2. Add a slight delay before redirecting to ensure the WebSocket 
+            // completely flushes the Ring packet before the component unmounts
+            setTimeout(() => {
+               router.push(`/dashboard/call?room=${mySyncId}`);
+            }, 600);
          }
       });
   };
