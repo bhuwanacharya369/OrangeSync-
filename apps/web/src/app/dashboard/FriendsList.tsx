@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { addContact, removeContact } from './actions';
-import { UserPlus, Phone, Trash2 } from 'lucide-react';
+import { UserPlus, Phone, Trash2, PhoneMissed, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
@@ -10,7 +10,23 @@ export default function FriendsList({ friends = [], mySyncId, myName }: { friend
   const [name, setName] = useState('');
   const [syncId, setSyncId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [missedCalls, setMissedCalls] = useState<any[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+     const loadMissed = () => {
+         const calls = JSON.parse(localStorage.getItem('orangesync_missed_calls') || '[]');
+         setMissedCalls(calls);
+     };
+     loadMissed();
+     window.addEventListener('orangesync_missed_call_update', loadMissed);
+     return () => window.removeEventListener('orangesync_missed_call_update', loadMissed);
+  }, []);
+
+  const clearMissedCalls = () => {
+      localStorage.removeItem('orangesync_missed_calls');
+      setMissedCalls([]);
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,6 +111,33 @@ export default function FriendsList({ friends = [], mySyncId, myName }: { friend
           ))
         )}
       </div>
+
+      {missedCalls.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-orange-100">
+             <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-black tracking-wide text-red-500 flex items-center gap-2">
+                   <PhoneMissed size={20} /> Missed Calls
+                </h3>
+                <button onClick={clearMissedCalls} className="text-xs text-red-400 hover:text-red-500 font-bold bg-red-50 hover:bg-red-100 px-3 py-1 rounded-full transition-colors flex items-center gap-1">
+                   Clear <X size={12} />
+                </button>
+             </div>
+             
+             <div className="space-y-2">
+                {missedCalls.map((m, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-red-50 rounded-xl border border-red-100">
+                       <div className="flex-1">
+                          <p className="font-bold text-red-700 text-sm">{m.name}</p>
+                          <p className="text-xs text-red-400 font-mono tracking-wider">{m.syncId}</p>
+                       </div>
+                       <button onClick={() => startCall(m)} className="bg-white text-green-500 hover:bg-green-500 hover:text-white border border-green-200 p-2 rounded-lg transition-colors" title="Call Back">
+                          <Phone size={16} fill="currentColor" />
+                       </button>
+                    </div>
+                ))}
+             </div>
+          </div>
+      )}
     </div>
   );
 }
