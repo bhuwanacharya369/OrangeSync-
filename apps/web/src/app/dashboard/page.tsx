@@ -113,7 +113,7 @@ export default async function DashboardPage() {
                     bgColor="#ffffff"
                   />
                 </div>
-                <p className="text-[10px] text-white mt-4 font-mono bg-black/20 py-1.5 px-3 rounded-lg mx-auto w-max">{getLocalCompanionUrl()}</p>
+                <p className="text-[10px] text-white mt-4 font-mono bg-black/20 py-1.5 px-3 rounded-lg mx-auto w-full max-w-[250px] overflow-hidden text-ellipsis whitespace-nowrap">{getLocalCompanionUrl()}</p>
              </div>
 
            </div>

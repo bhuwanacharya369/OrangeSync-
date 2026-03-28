@@ -142,33 +142,19 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
        });
    };
 
-   // DIAGNOSTIC LOOPBACK PING
-   const triggerSelfPing = async () => {
-       const supabase = createClient();
-       await supabase.from('call_logs').insert([{
-           caller_id: userSyncId,
-           caller_name: 'Diagnostic Self Ping',
-           target_id: userSyncId,
-           status: 'ringing'
-       }]);
-   };
+
 
    return (
        <>
          {/* Manual Override & Debug Banner */}
-         {!isRinging && (
+         {!isRinging && permissionStatus === 'default' && (
              <div className="fixed bottom-6 right-6 flex flex-col gap-2 z-40 max-w-sm">
-                 {permissionStatus === 'default' && (
-                     <div className="bg-orange-50 p-4 rounded-2xl shadow-xl border border-orange-200">
-                         <p className="text-orange-800 text-sm font-bold mb-2">Never miss a call!</p>
-                         <button onClick={requestManualPermissions} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-xl transition-colors">
-                             🔔 Enable Desktop Alerts
-                         </button>
-                     </div>
-                 )}
-                 <button onClick={triggerSelfPing} className="bg-neutral-800 hover:bg-neutral-900 text-white text-[10px] font-mono py-1.5 px-3 rounded-lg opacity-50 hover:opacity-100 transition-opacity self-end shadow-sm">
-                     ⚡ Test Ring (Self-Ping)
-                 </button>
+                 <div className="bg-orange-50 p-4 rounded-2xl shadow-xl border border-orange-200">
+                     <p className="text-orange-800 text-sm font-bold mb-2">Never miss a call!</p>
+                     <button onClick={requestManualPermissions} className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-bold py-2 px-4 rounded-xl transition-colors">
+                         🔔 Enable Desktop Alerts
+                     </button>
+                 </div>
              </div>
          )}
          

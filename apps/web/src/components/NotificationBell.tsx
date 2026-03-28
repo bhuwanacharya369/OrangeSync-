@@ -53,7 +53,7 @@ export default function NotificationBell() {
          </button>
 
          {isOpen && (
-            <div className="absolute right-0 top-14 w-80 bg-white rounded-2xl shadow-xl border border-orange-100 z-50 overflow-hidden animate-in slide-in-from-top-2">
+            <div className="absolute right-0 top-14 w-[calc(100vw-3rem)] sm:w-80 max-w-[320px] bg-white rounded-2xl shadow-xl border border-orange-100 z-50 overflow-hidden animate-in slide-in-from-top-2">
                <div className="bg-orange-500 text-white p-4 font-black flex justify-between items-center">
                   <span>Notifications</span>
                   {missedCalls.length > 0 && <button onClick={() => { localStorage.removeItem('orangesync_missed_calls'); setMissedCalls([]); window.dispatchEvent(new Event('orangesync_missed_call_update')); }} className="text-orange-200 hover:text-white text-xs underline">Clear All</button>}

@@ -8,12 +8,21 @@ import {
   RoomAudioRenderer,
   ControlBar,
   useTracks,
-} from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Whiteboard from '@/components/Whiteboard';
 import WatchTogether from '@/components/WatchTogether';
+import QRCode from 'react-qr-code';
+import os from 'os';
+import { Smartphone, X } from 'lucide-react';
+
+function getLocalCompanionUrl() {
+  if (typeof window !== 'undefined') {
+      return `${window.location.origin}/dashboard`;
+  }
+  return 'https://orange-sync-web.vercel.app/dashboard';
+}
 
 function CallPageContent() {
   const searchParams = useSearchParams();
@@ -22,6 +31,7 @@ function CallPageContent() {
   
   const [token, setToken] = useState("");
   const [activeTab, setActiveTab] = useState<'video' | 'whiteboard' | 'watch'>('video');
+  const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
     if (!room) return;
@@ -44,13 +54,41 @@ function CallPageContent() {
       {/* Top Header / Tab Bar */}
       <div className="h-14 bg-neutral-950 flex items-center px-4 justify-between border-b border-neutral-800">
         <div className="text-orange-500 font-black tracking-widest text-lg">OrangeSync</div>
-        <div className="flex bg-neutral-800 rounded-lg p-1">
-           <button onClick={() => setActiveTab('video')} className={`px-4 py-1 rounded-md text-sm font-bold transition-colors ${activeTab === 'video' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Grid</button>
-           <button onClick={() => setActiveTab('whiteboard')} className={`px-4 py-1 rounded-md text-sm font-bold transition-colors ${activeTab === 'whiteboard' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Whiteboard</button>
-           <button onClick={() => setActiveTab('watch')} className={`px-4 py-1 rounded-md text-sm font-bold transition-colors ${activeTab === 'watch' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Watch Together</button>
+        <div className="flex bg-neutral-800 rounded-lg p-1 overflow-x-auto hide-scrollbar sm:overflow-visible max-w-[50vw] sm:max-w-none">
+           <button onClick={() => setActiveTab('video')} className={`px-4 py-1 flex-shrink-0 rounded-md text-sm font-bold transition-colors ${activeTab === 'video' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Grid</button>
+           <button onClick={() => setActiveTab('whiteboard')} className={`px-4 py-1 flex-shrink-0 rounded-md text-sm font-bold transition-colors ${activeTab === 'whiteboard' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Whiteboard</button>
+           <button onClick={() => setActiveTab('watch')} className={`px-4 py-1 flex-shrink-0 rounded-md text-sm font-bold transition-colors ${activeTab === 'watch' ? 'bg-orange-600 text-white' : 'text-neutral-400 hover:text-white'}`}>Watch Together</button>
         </div>
-        <div className="text-neutral-500 text-xs font-mono bg-neutral-800 px-3 py-1 rounded-full hidden sm:block">ROOM: {room}</div>
+        
+        <div className="flex items-center gap-3">
+            <button onClick={() => setShowQRModal(true)} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+                <Smartphone size={14} /> <span className="hidden sm:inline">Link Tablet</span>
+            </button>
+            <div className="text-neutral-500 text-xs font-mono bg-neutral-800 px-3 py-1.5 rounded-lg hidden lg:block border border-neutral-700">ROOM: {room}</div>
+        </div>
       </div>
+
+      {/* Mid-Call QR Companion Modal */}
+      {showQRModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+              <div className="bg-neutral-900 border border-neutral-800 p-6 md:p-8 rounded-3xl max-w-sm w-full text-center relative animate-in zoom-in-95 duration-200 shadow-2xl">
+                  <button onClick={() => setShowQRModal(false)} className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors bg-neutral-800 p-2 rounded-full">
+                      <X size={16} />
+                  </button>
+                  <h2 className="text-2xl font-black text-white mb-2">Tablet Mode</h2>
+                  <p className="text-neutral-400 text-sm mb-6">Scan with your iPad or Android Tablet camera to instantly join this exact room as a remote drawing pad!</p>
+                  
+                  <div className="bg-white p-4 rounded-2xl w-max mx-auto shadow-xl ring-4 ring-orange-500/20">
+                      <QRCode 
+                        value={`${getLocalCompanionUrl()}/call?room=${room}`} 
+                        size={180} 
+                        fgColor="#000000"
+                        bgColor="#ffffff"
+                      />
+                  </div>
+              </div>
+          </div>
+      )}
 
       <LiveKitRoom
         video={true}
