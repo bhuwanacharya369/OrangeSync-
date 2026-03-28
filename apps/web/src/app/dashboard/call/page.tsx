@@ -91,7 +91,7 @@ function CallPageContent() {
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://mock.livekit.cloud'}
       data-lk-theme="default"
-      className="h-[100dvh] w-full bg-neutral-900 border-t-4 border-orange-500 flex flex-col"
+      className="fixed inset-0 z-[100] bg-neutral-950 flex flex-col"
       onDisconnected={() => router.push('/dashboard')}
     >
       {/* Top Header / Tab Bar */}
@@ -181,7 +181,7 @@ function MyVideoConference() {
     { onlySubscribed: false },
   );
   return (
-    <div className="h-full w-full bg-neutral-950 rounded-2xl overflow-hidden shadow-2xl border border-neutral-800/60 p-1 relative">
+    <div className="h-full w-full bg-neutral-950 overflow-hidden relative">
       <GridLayout tracks={tracks} style={{ height: '100%', width: '100%' }}>
         <ParticipantTile />
       </GridLayout>
