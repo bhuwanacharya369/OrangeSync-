@@ -99,17 +99,17 @@ body {
   @apply bg-neutral-950 text-neutral-100;
 }
 :root[data-mode="dark"] .bg-white {
-  @apply bg-neutral-900 border-neutral-800 !important;
+  @apply !bg-neutral-900 !border-neutral-800;
 }
 :root[data-mode="dark"] .text-orange-950 {
-  @apply text-orange-200 !important;
+  @apply !text-orange-200;
 }
 :root[data-mode="dark"] .text-gray-500 {
-  @apply text-neutral-400 !important;
+  @apply !text-neutral-400;
 }
 :root[data-mode="dark"] .bg-orange-50 {
-  @apply bg-orange-950/20 border-orange-900/40 !important;
+  @apply !bg-orange-950/20 !border-orange-900/40;
 }
 :root[data-mode="dark"] .bg-gray-100 {
-  @apply bg-neutral-800 text-neutral-200 hover:bg-neutral-700 !important;
+  @apply !bg-neutral-800 !text-neutral-200 !hover:bg-neutral-700;
 }
