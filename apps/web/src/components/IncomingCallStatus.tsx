@@ -185,12 +185,14 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
                <p className="text-orange-950 font-black text-2xl mb-6">{incomingCall.callerName}</p>
                
                <div className="flex gap-3">
-                   <button onClick={() => clearCallSafely()} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-bold flex justify-center items-center gap-2 transition-colors">
+                   <button onClick={() => incomingCall && clearCallSafely(incomingCall.dbCallId, 'declined')} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-bold flex justify-center items-center gap-2 transition-colors">
                        <PhoneOff size={18} /> Decline
                    </button>
                    <button onClick={() => {
-                       clearCallSafely();
-                       router.push(`/dashboard/call?room=${incomingCall.callerSyncId}`);
+                       if (incomingCall) {
+                           clearCallSafely(incomingCall.dbCallId, 'answered');
+                           router.push(`/dashboard/call?room=${incomingCall.callerSyncId}`);
+                       }
                    }} className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-green-500/30 transition-all active:scale-95">
                        <Phone size={18} fill="currentColor" /> Accept
                    </button>
