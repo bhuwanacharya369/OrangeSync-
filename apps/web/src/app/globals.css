@@ -113,3 +113,8 @@ body {
 :root[data-mode="dark"] .bg-gray-100 {
   @apply !bg-neutral-800 !text-neutral-200 hover:!bg-neutral-700;
 }
+
+/* Override LiveKit CSS constraints */
+.lk-room-container {
+  height: 100vh !important;
+}
