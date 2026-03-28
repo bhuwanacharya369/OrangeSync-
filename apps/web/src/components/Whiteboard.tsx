@@ -70,8 +70,7 @@ export default function Whiteboard() {
 
   return (
     <div 
-      className="flex flex-col w-full rounded-2xl shadow-lg border border-orange-200 overflow-hidden relative z-10 tldraw-container-override bg-white"
-      style={{ minHeight: '75vh', height: '100%' }}
+      className="flex-1 flex flex-col w-full h-full rounded-2xl shadow-lg border border-orange-200 overflow-hidden relative z-10 tldraw-container-override bg-white"
     >
        <Tldraw 
           onMount={(ed) => setEditor(ed)}

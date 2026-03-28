@@ -136,8 +136,8 @@ function CallPageContent() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden p-2 gap-2 min-h-0">
-          {/* Main Content Area */}
-          <div className={`flex-1 ${activeTab === 'video' ? 'block' : 'hidden md:block md:w-2/3 lg:w-3/4'}`}>
+          {/* Main Stage Panel */}
+          <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'video' ? 'flex' : 'hidden md:flex md:w-2/3 lg:w-3/4'}`}>
             {activeTab === 'whiteboard' ? (
                <Whiteboard />
             ) : activeTab === 'watch' ? (
