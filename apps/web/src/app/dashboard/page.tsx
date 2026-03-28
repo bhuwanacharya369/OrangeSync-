@@ -45,7 +45,10 @@ export default async function DashboardPage() {
             <p className="text-orange-600/80 font-medium mt-1">Ready to sync up and collaborate?</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 md:gap-4">
+            <Link href="/dashboard/profile" className="px-3 md:px-5 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-xl transition-colors shadow-sm text-sm" title="Settings & Themes">
+                ⚙️ <span className="hidden sm:inline">Settings</span>
+            </Link>
             <NotificationBell />
             <form action="/auth/signout" method="post">
               <button className="px-6 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-xl transition-colors shadow-sm">
