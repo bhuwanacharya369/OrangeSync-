@@ -10,12 +10,12 @@ import {
   useTracks,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Whiteboard from '@/components/Whiteboard';
 import WatchTogether from '@/components/WatchTogether';
 
-export default function CallPage() {
+function CallPageContent() {
   const searchParams = useSearchParams();
   const room = searchParams.get('room');
   const router = useRouter();
@@ -89,6 +89,14 @@ export default function CallPage() {
       </LiveKitRoom>
     </div>
   );
+}
+
+export default function CallPage() {
+  return (
+    <Suspense fallback={<div className="h-screen bg-neutral-900 flex items-center justify-center"><div className="animate-spin w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full"></div></div>}>
+      <CallPageContent />
+    </Suspense>
+  )
 }
 
 function MyVideoConference() {
