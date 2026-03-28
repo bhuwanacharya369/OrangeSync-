@@ -1,0 +1,29 @@
+{
+  "name": "orangesync",
+  "private": true,
+  "packageManager": "npm@10.0.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "latest"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@livekit/components-react": "^2.9.20",
+    "@livekit/react-native": "^2.9.8",
+    "@livekit/react-native-webrtc": "^137.0.3",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/ssr": "^0.9.0",
+    "@supabase/supabase-js": "^2.100.1",
+    "expo-local-authentication": "55.0.10-canary-20260327-0789fbc",
+    "expo-secure-store": "55.0.10-canary-20260327-0789fbc",
+    "livekit-client": "^2.18.0",
+    "react-native-url-polyfill": "^3.0.0"
+  }
+}

@@ -1,0 +1,33 @@
+name: Mobile EAS Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/**'
+
+jobs:
+  Build-Mobile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build Android via EAS
+        run: eas build --platform android --profile production --non-interactive --no-wait
+        working-directory: ./apps/mobile
