@@ -43,39 +43,21 @@ export default function FriendsList({ friends = [], mySyncId, myName }: { friend
 
   const startCall = async (friendTarget: any) => {
       const supabase = createClient();
-      const channel = supabase.channel('system:ringing', {
-          config: { broadcast: { self: true, ack: false } }
-      });
       
-      // Fallback: ALWAYS join the room natively even if the Socket firewall blocks the server broadcast
-      let redirected = false;
-      const executeRedirect = () => {
-          if (redirected) return;
-          redirected = true;
-          router.push(`/dashboard/call?room=${mySyncId}`);
-      };
+      try {
+          // 1. GUARANTEED REACH: Insert the ringing signal directly into the static database!
+          await supabase.from('call_logs').insert([{
+              caller_id: mySyncId,
+              caller_name: myName,
+              target_id: friendTarget.syncId,
+              status: 'ringing'
+          }]);
+      } catch (e) {
+          console.error("DB Signal Drop: ", e);
+      }
       
-      // Maximum 1.5 seconds wait time for the server to hook up the signaling
-      setTimeout(executeRedirect, 1500);
-      
-      channel.subscribe(async (status, err) => {
-         console.log('ORANGESYNC Broadcast Status:', status, err || '');
-         if (status === 'SUBSCRIBED') {
-            try {
-                await channel.send({
-                    type: 'broadcast',
-                    event: 'call',
-                    payload: { to: friendTarget.syncId, from: mySyncId, fromName: myName }
-                });
-                console.log('📢 Broadcast Ping Sent!');
-            } catch (e) {
-                console.error("Failed to send ring: ", e);
-            }
-            
-            // Allow 600ms for websocket packet travel, then jump to the camera room
-            setTimeout(executeRedirect, 600);
-         }
-      });
+      // 2. Immediately jump into the video interface
+      router.push(`/dashboard/call?room=${mySyncId}`);
   };
 
   return (
