@@ -1,18 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Phone, PhoneOff } from 'lucide-react';
+import { Phone, PhoneOff, PhoneMissed } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function IncomingCallListener({ userSyncId }: { userSyncId: string }) {
    const [incomingCall, setIncomingCall] = useState<{ callerSyncId: string, callerName: string } | null>(null);
    const [isRinging, setIsRinging] = useState(false);
    const router = useRouter();
+   
+   // Keep native OS Web Notification and Timeout in refs so we can easily dismiss them safely
+   const osNotificationRef = useRef<Notification | null>(null);
+   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
    useEffect(() => {
+      // 1. Immediately request OS Notification permissions when the dashboard mounts!
+      if ('Notification' in window && Notification.permission !== 'denied' && Notification.permission !== 'granted') {
+         Notification.requestPermission();
+      }
+
       const supabase = createClient();
-      
       const channel = supabase.channel('system:ringing');
       
       channel.on('broadcast', { event: 'call' }, (payload) => {
@@ -23,7 +31,7 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
              });
              setIsRinging(true);
              
-             // Play generic HTML5 audio beacon (simulate WhatsApp ping)
+             // 2. Play Audio Node Beep
              try {
                 const ctx = new window.AudioContext();
                 const o = ctx.createOscillator();
@@ -35,11 +43,60 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
                 o.start(0);
                 g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.5);
              } catch(e) {}
+
+             // 3. Immediately trigger OS Desktop Notification
+             if ('Notification' in window && Notification.permission === 'granted') {
+                const n = new Notification('🎥 OrangeSync Incoming Call', {
+                   body: `${payload.payload.fromName} is calling you! Click here to answer.`,
+                   icon: '/favicon.ico', // Will use the browser default or site icon
+                   requireInteraction: true // Keeps the banner on screen until acted upon
+                });
+                
+                n.onclick = () => {
+                    window.focus(); // Jump to this browser tab immediately
+                    clearCallSafely();
+                    router.push(`/dashboard/call?room=${payload.payload.from}`);
+                };
+                osNotificationRef.current = n;
+             }
+
+             // 4. Start the 30-second Missed Call countdown
+             if (timeoutRef.current) clearTimeout(timeoutRef.current);
+             timeoutRef.current = setTimeout(() => {
+                 // The call was MISSED!
+                 clearCallSafely();
+                 
+                 // Save to Local DB History explicitly
+                 const historyTxt = localStorage.getItem('orangesync_missed_calls') || '[]';
+                 const history = JSON.parse(historyTxt);
+                 
+                 history.unshift({
+                     name: payload.payload.fromName,
+                     syncId: payload.payload.from,
+                     timestamp: new Date().toISOString()
+                 });
+                 
+                 // Keep only last 10 missed calls
+                 localStorage.setItem('orangesync_missed_calls', JSON.stringify(history.slice(0, 10)));
+                 
+                 // Alert FriendsList to redraw itself
+                 window.dispatchEvent(new Event('orangesync_missed_call_update'));
+                 
+             }, 30000);
           }
       }).subscribe();
 
       return () => { supabase.removeChannel(channel); }
-   }, [userSyncId]);
+   }, [userSyncId, router]);
+
+   const clearCallSafely = () => {
+       setIsRinging(false);
+       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+       if (osNotificationRef.current) {
+           osNotificationRef.current.close();
+           osNotificationRef.current = null;
+       }
+   };
 
    if (!isRinging || !incomingCall) return null;
 
@@ -55,12 +112,11 @@ export default function IncomingCallListener({ userSyncId }: { userSyncId: strin
          <p className="text-orange-950 font-black text-2xl mb-6">{incomingCall.callerName}</p>
          
          <div className="flex gap-3">
-             <button onClick={() => setIsRinging(false)} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-bold flex justify-center items-center gap-2 transition-colors">
+             <button onClick={() => clearCallSafely()} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 py-3 rounded-2xl font-bold flex justify-center items-center gap-2 transition-colors">
                  <PhoneOff size={18} /> Decline
              </button>
              <button onClick={() => {
-                 setIsRinging(false);
-                 // Join the caller's room instantly
+                 clearCallSafely();
                  router.push(`/dashboard/call?room=${incomingCall.callerSyncId}`);
              }} className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-2xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-green-500/30 transition-all active:scale-95">
                  <Phone size={18} fill="currentColor" /> Accept
