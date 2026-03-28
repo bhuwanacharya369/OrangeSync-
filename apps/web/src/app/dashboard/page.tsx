@@ -5,6 +5,7 @@ import QRCode from 'react-qr-code';
 import FriendsList from './FriendsList';
 import IncomingCallListener from '@/components/IncomingCallStatus';
 import NotificationBell from '@/components/NotificationBell';
+import { Settings } from 'lucide-react';
 import os from 'os';
 
 function getLocalCompanionUrl() {
@@ -46,8 +47,8 @@ export default async function DashboardPage() {
           </div>
           
           <div className="flex items-center gap-3 md:gap-4">
-            <Link href="/dashboard/profile" className="px-3 md:px-5 py-2.5 bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold rounded-xl transition-colors shadow-sm text-sm" title="Settings & Themes">
-                ⚙️ <span className="hidden sm:inline">Settings</span>
+            <Link href="/dashboard/profile" className="p-3 bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors text-orange-600" title="Profile & Settings">
+                <Settings size={22} />
             </Link>
             <NotificationBell />
             <form action="/auth/signout" method="post">
