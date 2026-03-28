@@ -10,7 +10,7 @@ import {
   useTracks,
   useLocalParticipant,
 } from '@livekit/components-react';
-import { BackgroundBlur } from '@livekit/track-processors';
+import { BackgroundProcessor } from '@livekit/track-processors';
 import { Track } from 'livekit-client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -33,15 +33,18 @@ function VideoEffectsToolbar() {
     
     const toggleBlur = async () => {
         const trackPub = localParticipant?.getTrackPublication(Track.Source.Camera);
-        if (!trackPub || !trackPub.videoTrack) return;
+        if (!trackPub || !trackPub.videoTrack) {
+            alert("⚠️ Please turn on your camera first using the Video icon at the bottom of the screen!");
+            return;
+        }
         
         try {
             if (!isBlurred) {
-                const processor = BackgroundBlur(10);
+                const processor = BackgroundProcessor({ mode: 'background-blur', blurRadius: 15 });
                 await trackPub.videoTrack.setProcessor(processor);
                 setIsBlurred(true);
             } else {
-                await trackPub.videoTrack.setProcessor(undefined as any);
+                await trackPub.videoTrack.stopProcessor();
                 setIsBlurred(false);
             }
         } catch (e) {
@@ -178,8 +181,8 @@ function MyVideoConference() {
     { onlySubscribed: false },
   );
   return (
-    <div className="h-full w-full bg-black rounded-2xl overflow-hidden shadow-lg border border-neutral-800">
-      <GridLayout tracks={tracks} style={{ height: '100%' }}>
+    <div className="h-full w-full bg-neutral-950 rounded-2xl overflow-hidden shadow-2xl border border-neutral-800/60 p-1 relative">
+      <GridLayout tracks={tracks} style={{ height: '100%', width: '100%' }}>
         <ParticipantTile />
       </GridLayout>
     </div>
