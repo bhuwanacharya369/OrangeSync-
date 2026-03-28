@@ -8,6 +8,9 @@ import {
   RoomAudioRenderer,
   ControlBar,
   useTracks,
+  useLocalParticipant,
+} from '@livekit/components-react';
+import { BackgroundBlur } from '@livekit/track-processors';
 import { Track } from 'livekit-client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -22,6 +25,35 @@ function getLocalCompanionUrl() {
       return `${window.location.origin}/dashboard`;
   }
   return 'https://orange-sync-web.vercel.app/dashboard';
+}
+
+function VideoEffectsToolbar() {
+    const { localParticipant } = useLocalParticipant();
+    const [isBlurred, setIsBlurred] = useState(false);
+    
+    const toggleBlur = async () => {
+        const trackPub = localParticipant?.getTrackPublication(Track.Source.Camera);
+        if (!trackPub || !trackPub.videoTrack) return;
+        
+        try {
+            if (!isBlurred) {
+                const processor = BackgroundBlur(10);
+                await trackPub.videoTrack.setProcessor(processor);
+                setIsBlurred(true);
+            } else {
+                await trackPub.videoTrack.setProcessor(undefined as any);
+                setIsBlurred(false);
+            }
+        } catch (e) {
+            console.error("Blur Error:", e);
+        }
+    };
+    
+    return (
+        <button onClick={toggleBlur} className={`px-3 py-1.5 flex items-center gap-2 rounded-lg text-xs font-bold transition-all shadow-sm ${isBlurred ? 'bg-orange-600 text-white' : 'bg-neutral-800 text-neutral-300 hover:text-white border border-neutral-700 hover:border-neutral-600'}`} title="Background Blur">
+            {isBlurred ? '☁️ Blur ON' : '☁️ Blur OFF'}
+        </button>
+    );
 }
 
 function CallPageContent() {
@@ -61,10 +93,11 @@ function CallPageContent() {
         </div>
         
         <div className="flex items-center gap-3">
-            <button onClick={() => setShowQRModal(true)} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+            <VideoEffectsToolbar />
+            <button onClick={() => setShowQRModal(true)} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors shadow-sm shadow-orange-600/20">
                 <Smartphone size={14} /> <span className="hidden sm:inline">Link Tablet</span>
             </button>
-            <div className="text-neutral-500 text-xs font-mono bg-neutral-800 px-3 py-1.5 rounded-lg hidden lg:block border border-neutral-700">ROOM: {room}</div>
+            <div className="text-neutral-500 text-xs font-mono bg-neutral-800 px-3 py-1.5 rounded-lg hidden lg:block border border-neutral-700 shadow-inner">ROOM: {room}</div>
         </div>
       </div>
 

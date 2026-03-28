@@ -37,10 +37,10 @@ export default async function DashboardPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-orange-100 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-orange-100 gap-4 transition-colors">
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-orange-950">
-              Welcome back, <span className="text-orange-500">{user.user_metadata?.full_name || 'User'}</span>! 👋
+              Welcome back, <Link href="/dashboard/profile" className="text-orange-500 hover:text-orange-600 underline decoration-orange-300 decoration-2 underline-offset-4 cursor-pointer" title="Config Profile">{user.user_metadata?.full_name || 'User'}</Link>! 👋
             </h1>
             <p className="text-orange-600/80 font-medium mt-1">Ready to sync up and collaborate?</p>
           </div>
